@@ -1,22 +1,10 @@
 import * as vscode from 'vscode'
-// import { CssToUnocssProcess } from './process'
 import { transformUnocssBack } from './utils'
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-// 'use strict'
-// import { CssToUnocssProvider } from './provider';
 
 // let config = null
 // 插件被激活时调用activate
-export function activate(context: vscode.ExtensionContext) {
-  // config = vscode.workspace.getConfiguration('to-unocss')
-  // let provider = new CssToUnocssProvider(process);
+export function activate() {
   const LANS = ['html', 'vue', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
-  // for (let lan of LANS) {
-  //     //为对应类型文件添加代码提示
-  //     let providerDisposable = vscode.languages.registerCompletionItemProvider(lan, provider);
-  //     context.subscriptions.push(providerDisposable);
-  // }
 
   // 注册hover事件
   vscode.languages.registerHoverProvider(LANS, {
@@ -37,14 +25,12 @@ export function activate(context: vscode.ExtensionContext) {
       const css = await transformUnocssBack(selectedText) as string
       if (!css)
         return
-
       const md = new vscode.MarkdownString()
       md.appendMarkdown(`<span style="color:green;font-weight: bold">${css}</span>\n`)
 
       return new vscode.Hover(md)
     },
   })
-
 }
 
 // this method is called when your extension is deactivated

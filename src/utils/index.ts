@@ -24,7 +24,7 @@ export function transformUnocssBack(code: string) {
         const match = css.match(reg)
         if (!match)
           return
-        const result = match[0]
+        const result = match[0].replace(match[1], (match[1] as string).replace(/[:;,]/g, v => `${v} `)).replace('{', ' { ')
         resolve(result)
       })
   })
