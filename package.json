@@ -30,63 +30,6 @@
     "onLanguage:wxml",
     "onLanguage:axml"
   ],
-  "contributes": {
-    "commands": [
-      {
-        "command": "extension.unocss-to-css",
-        "title": "unocss-to-css"
-      },
-      {
-        "command": "extension.InlineStyleunocss-to-css",
-        "title": "styleunocss-to-css"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "extension.unocss-to-css",
-        "key": "cmd+Alt+p"
-      },
-      {
-        "command": "extension.InlineStyleunocss-to-css",
-        "key": "Alt+shift+p"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "when": "editorFocus",
-          "command": "extension.unocss-to-css",
-          "group": "6_px"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "extension.InlineStyleunocss-to-css",
-          "group": "6_px"
-        }
-      ]
-    },
-    "configuration": {
-      "type": "object",
-      "title": "to-unocss configuration",
-      "properties": {
-        "to-unocss.baseWidth": {
-          "type": "number",
-          "default": 1242,
-          "description": "%extension.baseWidth.title%"
-        },
-        "to-unocss.fixedDigits": {
-          "type": "number",
-          "default": 3,
-          "description": "%extension.fixedDigits.title%"
-        },
-        "to-unocss.autoRemovePrefixZero": {
-          "type": "boolean",
-          "default": false,
-          "description": "%extension.autoRemovePrefixZero.title%"
-        }
-      }
-    }
-  },
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
