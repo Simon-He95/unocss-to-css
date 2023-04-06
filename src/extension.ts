@@ -39,13 +39,12 @@ export function activate(context: vscode.ExtensionContext) {
         return
 
       const md = new vscode.MarkdownString()
-      md.appendMarkdown(`<span style="color:green">${css}</span>\n`)
+      md.appendMarkdown(`<span style="color:green;font-weight: bold">${css}</span>\n`)
 
       return new vscode.Hover(md)
     },
   })
 
-  context.subscriptions.push(disposable)
 }
 
 // this method is called when your extension is deactivated
