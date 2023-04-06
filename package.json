@@ -1,0 +1,118 @@
+{
+  "publisher": "simonhe",
+  "name": "unocss-to-css",
+  "displayName": "unocss-to-css",
+  "version": "0.0.1",
+  "description": "Vscode extension transform unocss to css",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/Simon-He95",
+  "homepage": "https://github.com/Simon-He95/unocss-to-css#readme",
+  "repository": "https://github.com/Simon-He95/unocss-to-css",
+  "bugs": {
+    "url": "https://github.com/Simon-He95/unocss-to-css/issues"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.77.0"
+  },
+  "activationEvents": [
+    "onLanguage:html",
+    "onLanguage:svelte",
+    "onLanguage:jsx",
+    "onLanguage:tsx",
+    "onLanguage:astro",
+    "onLanguage:vue",
+    "onLanguage:swan",
+    "onLanguage:wxml",
+    "onLanguage:axml"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.unocss-to-css",
+        "title": "unocss-to-css"
+      },
+      {
+        "command": "extension.InlineStyleunocss-to-css",
+        "title": "styleunocss-to-css"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.unocss-to-css",
+        "key": "cmd+Alt+p"
+      },
+      {
+        "command": "extension.InlineStyleunocss-to-css",
+        "key": "Alt+shift+p"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorFocus",
+          "command": "extension.unocss-to-css",
+          "group": "6_px"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "extension.InlineStyleunocss-to-css",
+          "group": "6_px"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "to-unocss configuration",
+      "properties": {
+        "to-unocss.baseWidth": {
+          "type": "number",
+          "default": 1242,
+          "description": "%extension.baseWidth.title%"
+        },
+        "to-unocss.fixedDigits": {
+          "type": "number",
+          "default": 3,
+          "description": "%extension.fixedDigits.title%"
+        },
+        "to-unocss.autoRemovePrefixZero": {
+          "type": "boolean",
+          "default": false,
+          "description": "%extension.autoRemovePrefixZero.title%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm compile && node ./node_modules/vscode/bin/test",
+    "build": "vsce package",
+    "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx,.md,.json --max-warnings 0 --cache",
+    "lint:fix": "eslint . --ext .vue,.js,.ts,.jsx,.tsx,.md,.json --max-warnings 0 --cache --fix",
+    "release": "npm build && npx bumpp --commit --tag --push --all && vsce publish --no-dependencies"
+  },
+  "dependencies": {
+    "@unocss/core": "^0.50.6",
+    "@unocss/preset-uno": "^0.50.6",
+    "prettier": "^2.8.7"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.37.0",
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.77.0",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "@vscode/test-electron": "^2.1.5",
+    "eslint": "^8.24.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.0.0",
+    "typescript": "^4.8.4"
+  }
+}
