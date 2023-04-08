@@ -20,11 +20,11 @@ export function transformUnocssBack(code: string) {
       .generate(code || '')
       .then((res: any) => {
         const css = res.getLayers()
-        const reg = new RegExp(`${escapeRegExp(code)}{(.*)}`)
+        const reg = new RegExp(`${escapeRegExp(code)}(:\\w+)?{(.*)}`)
         const match = css.match(reg)
         if (!match)
           return
-        const result = match[0].replace(match[1], (match[1] as string).replace(/[:;,]/g, v => `${v} `)).replace('{', ' { ')
+        const result = match[0].replace(match[2], (match[2] as string).replace(/[:;,]/g, v => `${v} `)).replace('{', ' { ')
         resolve(result)
       })
   })

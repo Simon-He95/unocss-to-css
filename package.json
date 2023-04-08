@@ -2,7 +2,7 @@
   "publisher": "simonhe",
   "name": "unocss-to-css",
   "displayName": "unocss-to-css",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Vscode extension transform unocss to css",
   "license": "MIT",
   "funding": "https://github.com/sponsors/Simon-He95",
@@ -41,7 +41,9 @@
   },
   "dependencies": {
     "@unocss/core": "^0.50.6",
-    "@unocss/preset-uno": "^0.50.6"
+    "@unocss/preset-uno": "^0.50.6",
+    "magic-string": "^0.30.0",
+    "unconfig": "^0.3.7"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.37.0",
