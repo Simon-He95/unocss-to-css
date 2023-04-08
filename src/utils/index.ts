@@ -20,7 +20,7 @@ export function transformUnocssBack(code: string) {
       .generate(code || '')
       .then((res: any) => {
         const css = res.getLayers()
-        const reg = new RegExp(`${code.replace(/[\:\[\]]/g, v => `\\\\${v}`)}{(.*)}`)
+        const reg = new RegExp(`${escapeRegExp(code)}{(.*)}`)
         const match = css.match(reg)
         if (!match)
           return
@@ -28,4 +28,8 @@ export function transformUnocssBack(code: string) {
         resolve(result)
       })
   })
+}
+
+function escapeRegExp(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\%:\!]/g, '\\\\\\$&')
 }

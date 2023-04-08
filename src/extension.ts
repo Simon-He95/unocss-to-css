@@ -12,14 +12,13 @@ export function activate() {
       const editor = vscode.window.activeTextEditor
       if (!editor)
         return
-      // todo:获取hover文本正行元素分析
       const selection = editor.selection
       const wordRange = new vscode.Range(selection.start, selection.end)
       const range = document.getWordRangeAtPosition(position)
       let word = document.getText(range)
       const lineNumber = position.line
       const line = document.lineAt(lineNumber).text
-      const wholeReg = new RegExp(`(\\w+:)?${word}(:[^\\s\\/>]+)?`)
+      const wholeReg = new RegExp(`(\\w+:)?([\\w\\-\\[\\(]+)?${word}(:*[^"\\s\\/>]+)?`)
       const matcher = line.match(wholeReg)
       if (matcher)
         word = matcher[0]
@@ -27,7 +26,7 @@ export function activate() {
       const equalReg = new RegExp(`([\\w\\-]+)=["'][^"']*${word}[^"']*["']`)
       if (word) {
         const match = line.match(equalReg)
-        if (match)
+        if (match && match[1] !== 'class')
           word = `${match[1]}-${word}`
       }
       // 获取当前选中的文本内容
