@@ -2,7 +2,7 @@
   "publisher": "simonhe",
   "name": "unocss-to-css",
   "displayName": "unocss-to-css",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Vscode extension transform unocss to css",
   "license": "MIT",
   "funding": "https://github.com/sponsors/Simon-He95",

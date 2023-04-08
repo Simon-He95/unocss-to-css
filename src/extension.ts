@@ -1,7 +1,6 @@
 import * as vscode from 'vscode'
 import { transformUnocssBack } from './utils'
 
-// let config = null
 // 插件被激活时调用activate
 export function activate() {
   const LANS = ['html', 'vue', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
@@ -17,7 +16,20 @@ export function activate() {
       const selection = editor.selection
       const wordRange = new vscode.Range(selection.start, selection.end)
       const range = document.getWordRangeAtPosition(position)
-      const word = document.getText(range)
+      let word = document.getText(range)
+      const lineNumber = position.line
+      const line = document.lineAt(lineNumber).text
+      const wholeReg = new RegExp(`(\\w+:)?${word}(:[^\\s\\/>]+)?`)
+      const matcher = line.match(wholeReg)
+      if (matcher)
+        word = matcher[0]
+
+      const equalReg = new RegExp(`([\\w\\-]+)=["'][^"']*${word}[^"']*["']`)
+      if (word) {
+        const match = line.match(equalReg)
+        if (match)
+          word = `${match[1]}-${word}`
+      }
       // 获取当前选中的文本内容
       const selectedText = editor.document.getText(wordRange) || word
       if (!selectedText)
