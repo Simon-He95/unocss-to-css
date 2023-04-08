@@ -13,7 +13,7 @@ export function activate() {
       const editor = vscode.window.activeTextEditor
       if (!editor)
         return
-
+      // todo:获取hover文本正行元素分析
       const selection = editor.selection
       const wordRange = new vscode.Range(selection.start, selection.end)
       const range = document.getWordRangeAtPosition(position)
