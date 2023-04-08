@@ -2,19 +2,24 @@
   "publisher": "simonhe",
   "name": "unocss-to-css",
   "displayName": "unocss-to-css",
-  "version": "0.0.9",
+  "packageManager": "pnpm@8.1.1",
+  "private": true,
+  "version": "0.0.10",
   "description": "Vscode extension transform unocss to css",
   "license": "MIT",
   "funding": "https://github.com/sponsors/Simon-He95",
   "homepage": "https://github.com/Simon-He95/unocss-to-css#readme",
   "repository": "https://github.com/Simon-He95/unocss-to-css",
+  "sponsor": {
+    "url": "https://github.com/Simon-He95/sponsor"
+  },
   "bugs": {
     "url": "https://github.com/Simon-He95/unocss-to-css/issues"
   },
   "categories": [
     "Other"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/index.js",
   "icon": "icon.png",
   "engines": {
     "vscode": "^1.77.0"
@@ -30,32 +35,33 @@
     "onLanguage:wxml",
     "onLanguage:axml"
   ],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm compile && node ./node_modules/vscode/bin/test",
-    "build": "vsce package",
+    "build": "tsup src/index.ts --external vscode",
+    "package": "vsce package",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx,.md,.json --max-warnings 0 --cache",
     "lint:fix": "eslint . --ext .vue,.js,.ts,.jsx,.tsx,.md,.json --max-warnings 0 --cache --fix",
-    "release": "npm build && npx bumpp --commit --tag --push --all && vsce publish --no-dependencies"
+    "release": "bumpp && nr publish"
   },
   "devDependencies": {
+    "tsup": "^6.7.0",
     "@unocss/core": "^0.50.6",
     "@unocss/preset-uno": "^0.50.6",
     "magic-string": "^0.30.0",
     "unconfig": "^0.3.7",
-    "@antfu/eslint-config": "^0.37.0",
-    "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "16.x",
+    "@antfu/eslint-config": "^0.38.4",
+    "@types/node": "^18.15.11",
     "@types/vscode": "^1.77.0",
-    "@typescript-eslint/eslint-plugin": "^5.38.1",
-    "@typescript-eslint/parser": "^5.38.1",
-    "@vscode/test-electron": "^2.1.5",
-    "eslint": "^8.24.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.0.0",
-    "prettier": "^2.8.7",
-    "typescript": "^4.8.4"
+    "bumpp": "^9.1.0",
+    "eslint": "^8.37.0",
+    "typescript": "^4.8.4",
+    "vsce": "^2.15.0",
+    "vitest": "^0.29.8",
+    "pnpm": "^8.1.1"
   }
 }
