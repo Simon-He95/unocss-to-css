@@ -17,7 +17,7 @@ export function transformUnocssBack(code: string) {
         const reg = new RegExp(`${escapeRegExp(code)}(:\\w+)?{(.*)}`)
         const match = css.match(reg)
         if (!match)
-          return
+          return resolve('')
         const result = match[0].replace(match[2], (match[2] as string).replace(/[:;,]/g, v => `${v} `)).replace('{', ' { ')
         resolve(result)
       })

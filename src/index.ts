@@ -10,6 +10,7 @@ export function activate() {
     async provideHover(document, position) {
       // 获取当前选中的文本范围
       const editor = vscode.window.activeTextEditor
+      console.log('hi')
       if (!editor)
         return
       const selection = editor.selection

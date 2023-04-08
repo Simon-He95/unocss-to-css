@@ -3,7 +3,6 @@
   "name": "unocss-to-css",
   "displayName": "unocss-to-css",
   "packageManager": "pnpm@8.1.1",
-  "private": true,
   "version": "0.0.10",
   "description": "Vscode extension transform unocss to css",
   "license": "MIT",
@@ -46,7 +45,8 @@
     "package": "vsce package",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx,.md,.json --max-warnings 0 --cache",
     "lint:fix": "eslint . --ext .vue,.js,.ts,.jsx,.tsx,.md,.json --max-warnings 0 --cache --fix",
-    "release": "bumpp && nr publish"
+    "publish": "vsce publish --no-dependencies",
+    "release": "bumpp && npm run publish"
   },
   "devDependencies": {
     "tsup": "^6.7.0",
