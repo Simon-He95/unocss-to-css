@@ -56,7 +56,7 @@ export function activate() {
       const md = new vscode.MarkdownString()
       md.isTrusted = true
       md.supportHtml = true
-      md.appendMarkdown('<a href="https://github.com/Simon-He95/unocss-to-css">To Unocss:</a>\n')
+      md.appendMarkdown('<a href="https://github.com/Simon-He95/unocss-to-css">Unocss To Css:</a>\n')
       md.appendCodeblock(css, 'css')
       return new vscode.Hover(md)
     },
