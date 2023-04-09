@@ -15,19 +15,36 @@ export function activate() {
       const selection = editor.selection
       const wordRange = new vscode.Range(selection.start, selection.end)
       let selectedText = editor.document.getText(wordRange)
+
       if (!selectedText) {
-        const range = document.getWordRangeAtPosition(position)
+        const range = document.getWordRangeAtPosition(position) as any
         let word = document.getText(range)
         const lineNumber = position.line
         const line = document.lineAt(lineNumber).text
-        const wholeReg = new RegExp(`(\\w+:)?([\\w\\-\\[\\(\\!]+)?${word}(:*[^"\\s\\/>]+)?`)
-        const matcher = line.match(wholeReg)
+        const wholeReg = new RegExp(`([\\w\\>\\[]+:)?(\\[[^\\]]+\\]:)?([\\w\\-\\[\\(\\!\\>\\&]+)?${word}(:*[^"\\s\\/>]+)?`, 'g')
+        let matcher = null
+
+        for (const match of line.matchAll(wholeReg)) {
+          const { index } = match
+          const pos = index! + match[0].indexOf(word)
+          if (pos === range?.c?.e) {
+            matcher = match
+            break
+          }
+        }
         if (matcher)
           word = matcher[0]
-        const equalReg = new RegExp(`([\\w\\-]+)=["'][^"']*${word}[^"']*["']`)
-        const match = line.match(equalReg)
-        if (match && match[1] !== 'class')
-          word = `${match[1]}-${word}`
+        matcher = null
+        const equalReg = new RegExp(`([\\[\\]\\(\\)\\>\\w\\-]+)=["'][^"']*${word}[^"']*["']`, 'g')
+        for (const match of line.matchAll(equalReg)) {
+          // 找比range小但最近的
+          const { index } = match
+          if (index! > range?.c?.e)
+            break
+          matcher = match
+        }
+        if (matcher && matcher[1] !== 'class')
+          word = `${matcher[1]}-${word}`
         selectedText = word
       }
 

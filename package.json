@@ -2,8 +2,8 @@
   "publisher": "simonhe",
   "name": "unocss-to-css",
   "displayName": "unocss-to-css",
-  "packageManager": "pnpm@8.1.1",
   "version": "0.0.10",
+  "packageManager": "pnpm@8.1.1",
   "description": "Vscode extension transform unocss to css",
   "license": "MIT",
   "funding": "https://github.com/sponsors/Simon-He95",
@@ -20,6 +20,9 @@
   ],
   "main": "./dist/index.js",
   "icon": "icon.png",
+  "files": [
+    "dist"
+  ],
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -34,9 +37,6 @@
     "onLanguage:wxml",
     "onLanguage:axml"
   ],
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -49,19 +49,19 @@
     "release": "bumpp && npm run publish"
   },
   "devDependencies": {
-    "tsup": "^6.7.0",
-    "@unocss/core": "^0.50.6",
-    "@unocss/preset-uno": "^0.50.6",
-    "magic-string": "^0.30.0",
-    "unconfig": "^0.3.7",
     "@antfu/eslint-config": "^0.38.4",
     "@types/node": "^18.15.11",
     "@types/vscode": "^1.77.0",
+    "@unocss/core": "^0.50.6",
+    "@unocss/preset-uno": "^0.50.6",
     "bumpp": "^9.1.0",
     "eslint": "^8.37.0",
+    "magic-string": "^0.30.0",
+    "pnpm": "^8.1.1",
+    "tsup": "^6.7.0",
     "typescript": "^4.8.4",
-    "vsce": "^2.15.0",
+    "unconfig": "^0.3.7",
     "vitest": "^0.29.8",
-    "pnpm": "^8.1.1"
+    "vsce": "^2.15.0"
   }
 }
