@@ -54,8 +54,10 @@ export function activate() {
       if (!css)
         return
       const md = new vscode.MarkdownString()
-      md.appendMarkdown(`<span style="color:green;font-weight: bold">${css}</span>\n`)
-
+      md.isTrusted = true
+      md.supportHtml = true
+      md.appendMarkdown('<a href="https://github.com/Simon-He95/unocss-to-css">To Unocss:</a>\n')
+      md.appendCodeblock(css, 'css')
       return new vscode.Hover(md)
     },
   })
