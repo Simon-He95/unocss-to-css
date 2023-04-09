@@ -1,11 +1,15 @@
-## extension unocss to css
-hover unocss属性转换成css
+<p align="center">
+<img height="200" src="./assets/kv.png" alt="to unocss">
+</p>
+<p align="center"> English | <a href="./README_zh.md">简体中文</a></p>
+
+The vscode extension converts [unocss](https://github.com/unocss/unocss) to css.It's powered by @unocss/core.
 
 ![demo](/assets/demo.gif)
 
 ## :coffee:
 
-[请我喝一杯咖啡](https://github.com/Simon-He95/sponsor)
+[buy me a cup of coffee](https://github.com/Simon-He95/sponsor)
 
 ## License
 
