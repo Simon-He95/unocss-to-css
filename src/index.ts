@@ -5,17 +5,23 @@ import { transformUnocssBack } from './utils'
 export function activate() {
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
-
-  const decorationType = vscode.window.createTextEditorDecorationType({
+  const { dark, light } = vscode.workspace.getConfiguration('unocss-to-css') || {}
+  const style = Object.assign({
     dark: {
       textDecoration: 'underline',
       backgroundColor: 'rgba(144, 238, 144, 0.5)',
       color: 'black',
     },
-    textDecoration: 'underline',
-    backgroundColor: 'rgba(255, 165, 0, 0.5)',
-    color: '#ffffff',
+    light: {
+      textDecoration: 'underline',
+      backgroundColor: 'rgba(255, 165, 0, 0.5)',
+      color: '#ffffff',
+    }
+  }, {
+    dark,
+    light
   })
+  const decorationType = vscode.window.createTextEditorDecorationType(style)
 
   // 注册hover事件
   vscode.languages.registerHoverProvider(LANS, {
