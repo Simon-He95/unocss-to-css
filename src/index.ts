@@ -24,6 +24,8 @@ export function activate() {
       const editor = vscode.window.activeTextEditor
       if (!editor)
         return
+      // 移除样式
+      vscode.window.activeTextEditor?.setDecorations(decorationType, [])
       const selection = editor.selection
       const wordRange = new vscode.Range(selection.start, selection.end)
       let selectedText = editor.document.getText(wordRange)
@@ -81,6 +83,7 @@ export function activate() {
       const css = await transformUnocssBack(selectedText) as string
       if (!css)
         return
+
       // 增加decorationType样式
       editor.edit(() => editor.setDecorations(decorationType, realRangeMap.map((item: any) => item.range)))
       const md = new vscode.MarkdownString()
@@ -94,7 +97,6 @@ export function activate() {
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection((event) => {
-    // 移除样式
     vscode.window.activeTextEditor?.setDecorations(decorationType, [])
   })
 }
