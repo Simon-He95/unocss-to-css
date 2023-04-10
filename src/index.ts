@@ -3,7 +3,19 @@ import { transformUnocssBack } from './utils'
 
 // 插件被激活时调用activate
 export function activate() {
+  // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
+
+  const decorationType = vscode.window.createTextEditorDecorationType({
+    dark: {
+      textDecoration: 'underline',
+      backgroundColor: 'rgba(144, 238, 144, 0.5)',
+      color: 'black',
+    },
+    textDecoration: 'underline',
+    backgroundColor: 'rgba(255, 165, 0, 0.5)',
+    color: '#ffffff',
+  })
 
   // 注册hover事件
   vscode.languages.registerHoverProvider(LANS, {
@@ -15,20 +27,28 @@ export function activate() {
       const selection = editor.selection
       const wordRange = new vscode.Range(selection.start, selection.end)
       let selectedText = editor.document.getText(wordRange)
-
+      const realRangeMap: any = []
       if (!selectedText) {
         const range = document.getWordRangeAtPosition(position) as any
+        const line = range.c.c
         let word = document.getText(range)
         const lineNumber = position.line
-        const line = document.lineAt(lineNumber).text
+        const lineText = document.lineAt(lineNumber).text
         const wholeReg = new RegExp(`([\\w\\>\\[]+:)?(\\[[^\\]]+\\]:)?([\\w\\-\\[\\(\\!\\>\\&]+)?${word}(:*[^"\\s\\/>]+)?`, 'g')
         let matcher = null
 
-        for (const match of line.matchAll(wholeReg)) {
+        for (const match of lineText.matchAll(wholeReg)) {
           const { index } = match
           const pos = index! + match[0].indexOf(word)
           if (pos === range?.c?.e) {
             matcher = match
+            realRangeMap.push({
+              content: match[0],
+              range: new vscode.Range(
+                new vscode.Position(line, index!),
+                new vscode.Position(line, index! + match[0].length),
+              ),
+            })
             break
           }
         }
@@ -36,15 +56,23 @@ export function activate() {
           word = matcher[0]
         matcher = null
         const equalReg = new RegExp(`([\\[\\]\\(\\)\\>\\w\\-]+)=["'][^"']*${word}[^"']*["']`, 'g')
-        for (const match of line.matchAll(equalReg)) {
+        for (const match of lineText.matchAll(equalReg)) {
           // 找比range小但最近的
           const { index } = match
           if (index! > range?.c?.e)
             break
           matcher = match
         }
-        if (matcher && matcher[1] !== 'class')
+        if (matcher && matcher[1] !== 'class') {
           word = `${matcher[1]}-${word}`
+          realRangeMap.push({
+            range: new vscode.Range(
+              new vscode.Position(line, matcher.index!),
+              new vscode.Position(line, matcher.index! + matcher[1].length),
+            ),
+            content: matcher[1],
+          })
+        }
         selectedText = word
       }
 
@@ -53,6 +81,8 @@ export function activate() {
       const css = await transformUnocssBack(selectedText) as string
       if (!css)
         return
+      // 增加decorationType样式
+      editor.edit(() => editor.setDecorations(decorationType, realRangeMap.map((item: any) => item.range)))
       const md = new vscode.MarkdownString()
       md.isTrusted = true
       md.supportHtml = true
