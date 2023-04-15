@@ -5,22 +5,19 @@ import { transformUnocssBack } from './utils'
 export function activate() {
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
-  const { dark, light } = vscode.workspace.getConfiguration('unocss-to-css') || {}
-  const style = Object.assign({
-    dark: {
+  const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
+  const style = {
+    dark: Object.assign({
       textDecoration: 'underline',
       backgroundColor: 'rgba(144, 238, 144, 0.5)',
       color: 'black',
-    },
-    light: {
+    }, dark),
+    light: Object.assign({
       textDecoration: 'underline',
       backgroundColor: 'rgba(255, 165, 0, 0.5)',
       color: '#ffffff',
-    }
-  }, {
-    dark,
-    light
-  })
+    }, light),
+  }
   const decorationType = vscode.window.createTextEditorDecorationType(style)
 
   // 注册hover事件
@@ -102,9 +99,7 @@ export function activate() {
   })
 
   // 监听编辑器选择内容变化的事件
-  vscode.window.onDidChangeTextEditorSelection((event) => {
-    vscode.window.activeTextEditor?.setDecorations(decorationType, [])
-  })
+  vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
 }
 
 // this method is called when your extension is deactivated
