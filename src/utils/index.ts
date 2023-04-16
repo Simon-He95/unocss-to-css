@@ -3,7 +3,7 @@ import presetUno from '@unocss/preset-uno'
 
 export type CssType = 'less' | 'scss' | 'css' | 'stylus'
 
-export function transformUnocssBack(code: string) {
+export function transformUnocssBack(code: string): Promise<string> {
   return new Promise((resolve) => {
     createGenerator(
       {},

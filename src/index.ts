@@ -7,6 +7,7 @@ export function activate() {
   const LANS = ['html', 'vue', 'svelte', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
   const cacheMap = new LRUCache(500)
+  let timer: any = null
   const md = new vscode.MarkdownString()
   md.isTrusted = true
   md.supportHtml = true
@@ -26,9 +27,9 @@ export function activate() {
 
   // 注册hover事件
   vscode.languages.registerHoverProvider(LANS, {
-    async provideHover(document, position) {
-      // todo: hover切换频繁取消上一个没开始的任务
-      // 获取当前选中的文本范围
+    provideHover(document, position) {
+      if (timer)
+        clearTimeout(timer)
       const editor = vscode.window.activeTextEditor
       if (!editor)
         return
@@ -88,15 +89,22 @@ export function activate() {
 
       if (!selectedText)
         return
-      if (cacheMap.has(selectedText))
-        return setStyle(editor, realRangeMap, cacheMap.get(selectedText))
-
-      const css = await transformUnocssBack(selectedText) as string
-      if (!css)
-        return
-        // 设置cache
-      cacheMap.set(selectedText, css)
-      return setStyle(editor, realRangeMap, css)
+      if (cacheMap.has(selectedText)) {
+        const cacheText = cacheMap.get(selectedText)
+        if (!cacheText)
+          return
+        return setStyle(editor, realRangeMap, cacheText)
+      }
+      return new Promise((resolve) => {
+        timer = setTimeout(() => {
+          transformUnocssBack(selectedText).then((css) => {
+            cacheMap.set(selectedText, css)
+            if (!css)
+              return resolve(null)
+            resolve(setStyle(editor, realRangeMap, css))
+          })
+        }, 200)
+      })
     },
   })
 
