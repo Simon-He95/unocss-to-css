@@ -1,11 +1,15 @@
 import * as vscode from 'vscode'
-import { transformUnocssBack } from './utils'
+import { LRUCache, transformUnocssBack } from './utils'
 
 // 插件被激活时调用activate
 export function activate() {
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'svelte', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
+  const cacheMap = new LRUCache(500)
+  const md = new vscode.MarkdownString()
+  md.isTrusted = true
+  md.supportHtml = true
   const style = {
     dark: Object.assign({
       textDecoration: 'underline',
@@ -23,6 +27,7 @@ export function activate() {
   // 注册hover事件
   vscode.languages.registerHoverProvider(LANS, {
     async provideHover(document, position) {
+      // todo: hover切换频繁取消上一个没开始的任务
       // 获取当前选中的文本范围
       const editor = vscode.window.activeTextEditor
       if (!editor)
@@ -83,23 +88,29 @@ export function activate() {
 
       if (!selectedText)
         return
+      if (cacheMap.has(selectedText))
+        return setStyle(editor, realRangeMap, cacheMap.get(selectedText))
+
       const css = await transformUnocssBack(selectedText) as string
       if (!css)
         return
-
-      // 增加decorationType样式
-      editor.edit(() => editor.setDecorations(decorationType, realRangeMap.map((item: any) => item.range)))
-      const md = new vscode.MarkdownString()
-      md.isTrusted = true
-      md.supportHtml = true
-      md.appendMarkdown('<a href="https://github.com/Simon-He95/unocss-to-css">Unocss To Css:</a>\n')
-      md.appendCodeblock(css, 'css')
-      return new vscode.Hover(md)
+        // 设置cache
+      cacheMap.set(selectedText, css)
+      return setStyle(editor, realRangeMap, css)
     },
   })
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
+
+  function setStyle(editor: vscode.TextEditor, realRangeMap: any[], css: string) {
+    // 增加decorationType样式
+    editor.edit(() => editor.setDecorations(decorationType, realRangeMap.map((item: any) => item.range)))
+    md.value = ''
+    md.appendMarkdown('<a href="https://github.com/Simon-He95/unocss-to-css">Unocss To Css:</a>\n')
+    md.appendCodeblock(css, 'css')
+    return new vscode.Hover(md)
+  }
 }
 
 // this method is called when your extension is deactivated
