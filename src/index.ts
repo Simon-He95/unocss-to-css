@@ -26,87 +26,106 @@ export function activate() {
   const decorationType = vscode.window.createTextEditorDecorationType(style)
 
   // 注册hover事件
-  vscode.languages.registerHoverProvider(LANS, {
-    provideHover(document, position) {
-      if (timer)
-        clearTimeout(timer)
-      const editor = vscode.window.activeTextEditor
-      if (!editor)
-        return
-      // 移除样式
-      vscode.window.activeTextEditor?.setDecorations(decorationType, [])
-      const selection = editor.selection
-      const wordRange = new vscode.Range(selection.start, selection.end)
-      let selectedText = editor.document.getText(wordRange)
-      const realRangeMap: any = []
-      if (!selectedText) {
-        const range = document.getWordRangeAtPosition(position) as any
-        const line = range.c.c
-        let word = document.getText(range)
-        const lineNumber = position.line
-        const lineText = document.lineAt(lineNumber).text
-        const wholeReg = new RegExp(`([\\w\\>\\[]+:)?(\\[[^\\]]+\\]:)?([\\w\\-\\[\\(\\!\\>\\&]+)?${word}(:*[^"\\s\\/>]+)?`, 'g')
-        let matcher = null
-
-        for (const match of lineText.matchAll(wholeReg)) {
-          const { index } = match
-          const pos = index! + match[0].indexOf(word)
-          if (pos === range?.c?.e) {
-            matcher = match
-            realRangeMap.push({
-              content: match[0],
-              range: new vscode.Range(
-                new vscode.Position(line, index!),
-                new vscode.Position(line, index! + match[0].length),
-              ),
-            })
-            break
+  setTimeout(() => {
+    vscode.languages.registerHoverProvider(LANS, {
+      provideHover(document, position) {
+        const offset = document.offsetAt(position)
+        // 如果不在template 中或style中直接return
+        const alltext = document.getText()
+        const templateRange = getRange(alltext.match(/[\s\n]<template.*<\/template>/s))
+        const styleRange = getRange(alltext.match(/[\s\n]<style.*<\/style>/))
+        if (templateRange) {
+          const [start, end] = templateRange
+          if (!styleRange) {
+            if ((offset < start || offset > end))
+              return
+          }
+          else {
+            const [start1, end1] = styleRange
+            if ((offset < start || offset > end) && (offset < start1 || offset > end1))
+              return
           }
         }
-        if (matcher)
-          word = matcher[0]
-        matcher = null
-        const equalReg = new RegExp(`([\\[\\]\\(\\)\\>\\w\\-]+)=["'][^"']*${word}[^"']*["']`, 'g')
-        for (const match of lineText.matchAll(equalReg)) {
-          // 找比range小但最近的
-          const { index } = match
-          if (index! > range?.c?.e)
-            break
-          matcher = match
-        }
-        if (matcher && matcher[1] !== 'class') {
-          word = `${matcher[1]}-${word}`
-          realRangeMap.push({
-            range: new vscode.Range(
-              new vscode.Position(line, matcher.index!),
-              new vscode.Position(line, matcher.index! + matcher[1].length),
-            ),
-            content: matcher[1],
-          })
-        }
-        selectedText = word
-      }
-
-      if (!selectedText)
-        return
-      if (cacheMap.has(selectedText)) {
-        const cacheText = cacheMap.get(selectedText)
-        if (!cacheText)
+        if (timer)
+          clearTimeout(timer)
+        const editor = vscode.window.activeTextEditor
+        if (!editor)
           return
-        return setStyle(editor, realRangeMap, cacheText)
-      }
-      return new Promise((resolve) => {
-        timer = setTimeout(() => {
-          transformUnocssBack(selectedText).then((css) => {
-            cacheMap.set(selectedText, css)
-            if (!css)
-              return resolve(null)
-            resolve(setStyle(editor, realRangeMap, css))
-          })
-        }, 200)
-      })
-    },
-  })
+        // 移除样式
+        vscode.window.activeTextEditor?.setDecorations(decorationType, [])
+        const selection = editor.selection
+        const wordRange = new vscode.Range(selection.start, selection.end)
+        let selectedText = editor.document.getText(wordRange)
+        const realRangeMap: any = []
+        if (!selectedText) {
+          const range = document.getWordRangeAtPosition(position) as any
+          const line = range.c.c
+          let word = document.getText(range)
+          const lineNumber = position.line
+          const lineText = document.lineAt(lineNumber).text
+          const wholeReg = new RegExp(`([\\w\\>\\[]+:)?(\\[[^\\]]+\\]:)?([\\w\\-\\[\\(\\!\\>\\&]+)?${word}(:*[^"\\s\\/>]+)?`, 'g')
+          let matcher = null
+
+          for (const match of lineText.matchAll(wholeReg)) {
+            const { index } = match
+            const pos = index! + match[0].indexOf(word)
+            if (pos === range?.c?.e) {
+              matcher = match
+              realRangeMap.push({
+                content: match[0],
+                range: new vscode.Range(
+                  new vscode.Position(line, index!),
+                  new vscode.Position(line, index! + match[0].length),
+                ),
+              })
+              break
+            }
+          }
+          if (matcher)
+            word = matcher[0]
+          matcher = null
+          const equalReg = new RegExp(`([\\[\\]\\(\\)\\>\\w\\-]+)=["'][^"']*${word}[^"']*["']`, 'g')
+          for (const match of lineText.matchAll(equalReg)) {
+            // 找比range小但最近的
+            const { index } = match
+            if (index! > range?.c?.e)
+              break
+            matcher = match
+          }
+          if (matcher && matcher[1] !== 'class') {
+            word = `${matcher[1]}-${word}`
+            realRangeMap.push({
+              range: new vscode.Range(
+                new vscode.Position(line, matcher.index!),
+                new vscode.Position(line, matcher.index! + matcher[1].length),
+              ),
+              content: matcher[1],
+            })
+          }
+          selectedText = word
+        }
+
+        if (!selectedText)
+          return
+        if (cacheMap.has(selectedText)) {
+          const cacheText = cacheMap.get(selectedText)
+          if (!cacheText)
+            return
+          return setStyle(editor, realRangeMap, cacheText)
+        }
+        return new Promise((resolve) => {
+          timer = setTimeout(() => {
+            transformUnocssBack(selectedText).then((css) => {
+              cacheMap.set(selectedText, css)
+              if (!css)
+                return resolve(null)
+              resolve(setStyle(editor, realRangeMap, css))
+            })
+          }, 200)
+        })
+      },
+    })
+  }, 500)
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
@@ -123,3 +142,11 @@ export function activate() {
 
 // this method is called when your extension is deactivated
 export function deactivate() { }
+
+function getRange(match: RegExpMatchArray | null) {
+  if (!match)
+    return []
+  const start = match.index!
+  const end = start + match[0].length
+  return [start, end]
+}
