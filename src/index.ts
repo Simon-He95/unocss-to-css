@@ -3,6 +3,7 @@ import { LRUCache, transformUnocssBack } from './utils'
 
 // 插件被激活时调用activate
 export function activate() {
+  // todo: 提前hover前做一次编辑器文本的cache，针对vue文件中的template
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'svelte', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
