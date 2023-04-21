@@ -1,13 +1,14 @@
 import * as vscode from 'vscode'
-import { LRUCache, transformUnocssBack } from './utils'
+import { addCache, cacheMap, transformUnocssBack } from './utils'
 
 // 插件被激活时调用activate
-export function activate() {
+export function activate(context: vscode.ExtensionContext) {
   // todo: 提前hover前做一次编辑器文本的cache，针对vue文件中的template
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'svelte', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
-  const cacheMap = new LRUCache(500)
+  const activeEditor = vscode.window.activeTextEditor
+
   let timer: any = null
   const md = new vscode.MarkdownString()
   md.isTrusted = true
@@ -25,6 +26,8 @@ export function activate() {
     }, light),
   }
   const decorationType = vscode.window.createTextEditorDecorationType(style)
+
+  // 异步解析content
 
   // 注册hover事件
   setTimeout(() => {
@@ -130,6 +133,13 @@ export function activate() {
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
+
+  addCache(activeEditor?.document.getText() as string)
+
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((event) => {
+    if (event.contentChanges.length)
+      addCache(activeEditor?.document.getText() as string)
+  }))
 
   function setStyle(editor: vscode.TextEditor, realRangeMap: any[], css: string) {
     // 增加decorationType样式

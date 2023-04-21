@@ -60,3 +60,27 @@ export class LRUCache {
     return this.cache.has(key)
   }
 }
+
+export const cacheMap = new LRUCache(500)
+
+export function addCache(content: string) {
+  const match = content.match(/[\n\s]<template[^>]+(.*)<\/template>/s)
+  if (!match)
+    return
+  const template = match[1]
+  for (const match of template.matchAll(/<[^\s]+\s([^>\/]+)[\/>]/g)) {
+    if (!match)
+      continue
+    // 只考虑单独的属性
+    const attributes = match[1].replace(/[\w\-@:]+="[^"]+"/g, '').trim().replace(/\s+/g, ' ')
+
+    if (!attributes)
+      continue
+    const attrs = attributes.split(' ')
+    attrs.forEach(attr =>
+      transformUnocssBack(attr).then(r =>
+        r && cacheMap.set(attr, r),
+      ),
+    )
+  }
+}
