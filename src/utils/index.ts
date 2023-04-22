@@ -64,7 +64,7 @@ export class LRUCache {
 export const cacheMap = new LRUCache(500)
 
 export function addCache(content: string) {
-  const match = content.match(/[\n\s]<template[^>]+(.*)<\/template>/s)
+  const match = content.match(/[\n\s]<template[^>]*>(.*)<\/template>/s)
   if (!match)
     return
   const template = match[1]
@@ -76,7 +76,10 @@ export function addCache(content: string) {
 
     if (!attributes)
       continue
-    const attrs = attributes.split(' ')
+      // 过滤缓存已有的属性
+    const attrs = attributes.split(' ').filter(attr =>
+      !cacheMap.has(attr),
+    )
     attrs.forEach(attr =>
       transformUnocssBack(attr).then(r =>
         r && cacheMap.set(attr, r),

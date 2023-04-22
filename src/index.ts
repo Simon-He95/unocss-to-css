@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'svelte', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
-  const activeEditor = vscode.window.activeTextEditor
+  const document = vscode.window.activeTextEditor!.document
 
   let timer: any = null
   const md = new vscode.MarkdownString()
@@ -133,12 +133,13 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
-
-  addCache(activeEditor?.document.getText() as string)
+  const languageId = document.languageId
+  if (languageId === 'vue')
+    addCache(document.getText() as string)
 
   context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((event) => {
-    if (event.contentChanges.length)
-      addCache(activeEditor?.document.getText() as string)
+    if (languageId === 'vue' && event.contentChanges.length)
+      addCache(document!.getText() as string)
   }))
 
   function setStyle(editor: vscode.TextEditor, realRangeMap: any[], css: string) {
