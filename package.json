@@ -2,7 +2,7 @@
   "publisher": "simonhe",
   "name": "unocss-to-css",
   "displayName": "unocss-to-css",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "packageManager": "pnpm@8.1.1",
   "description": "Vscode extension transform unocss to css",
   "author": "Simon He <https://github.com/Simon-He95>",
