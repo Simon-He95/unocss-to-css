@@ -120,9 +120,9 @@ export function activate(context: vscode.ExtensionContext) {
         return new Promise((resolve) => {
           timer = setTimeout(() => {
             transformUnocssBack(selectedText).then((css) => {
-              cacheMap.set(selectedText, css)
               if (!css)
                 return resolve(null)
+              cacheMap.set(selectedText, css)
               resolve(setStyle(editor, realRangeMap, css))
             })
           }, 200)
