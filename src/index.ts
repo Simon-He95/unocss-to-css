@@ -1,11 +1,11 @@
 import * as vscode from 'vscode'
-import { addCache, cacheMap, transformUnocssBack } from './utils'
+import { addCacheReact, addCacheVue, cacheMap, transformUnocssBack } from './utils'
 
 // 插件被激活时调用activate
 export function activate(context: vscode.ExtensionContext) {
   // todo: 提前hover前做一次编辑器文本的cache，针对vue文件中的template
   // 将规则添加到语言配置中
-  const LANS = ['html', 'vue', 'svelte', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
+  const LANS = ['html', 'vue', 'svelte', 'typescriptreact', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
   const document = vscode.window.activeTextEditor!.document
 
@@ -26,8 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
     }, light),
   }
   const decorationType = vscode.window.createTextEditorDecorationType(style)
-
-  // 异步解析content
 
   // 注册hover事件
   setTimeout(() => {
@@ -96,7 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
               break
             matcher = match
           }
-          if (matcher && matcher[1] !== 'class') {
+          if (matcher && (matcher[1] !== 'class' && matcher[1] !== 'className')) {
             word = `${matcher[1]}-${word}`
             realRangeMap.push({
               range: new vscode.Range(
@@ -135,11 +133,17 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
   const languageId = document.languageId
   if (languageId === 'vue')
-    addCache(document.getText() as string)
+    addCacheVue(document.getText() as string)
+  else if (languageId === 'typescriptreact')
+    addCacheReact(document!.getText() as string)
 
   context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((event) => {
-    if (languageId === 'vue' && event.contentChanges.length)
-      addCache(document!.getText() as string)
+    if (!event.contentChanges.length)
+      return
+    if (languageId === 'vue')
+      return addCacheVue(document!.getText() as string)
+    if (languageId === 'typescriptreact')
+      return addCacheReact(document!.getText() as string)
   }))
 
   function setStyle(editor: vscode.TextEditor, realRangeMap: any[], css: string) {
