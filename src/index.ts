@@ -7,7 +7,10 @@ export function activate(context: vscode.ExtensionContext) {
   // 将规则添加到语言配置中
   const LANS = ['html', 'vue', 'svelte', 'typescriptreact', 'solid', 'ts', 'tsx', 'js', 'jsx', 'swan', 'wxml', 'axml', 'css', 'wxss', 'acss', 'less', 'scss', 'sass', 'stylus', 'wxss', 'acss']
   const { dark = {}, light = {} } = vscode.workspace.getConfiguration('unocss-to-css') || {}
-  const document = vscode.window.activeTextEditor!.document
+  const activeTextEditor = vscode.window.activeTextEditor
+  if (!activeTextEditor)
+    return
+  const document = activeTextEditor.document
 
   let timer: any = null
   const md = new vscode.MarkdownString()
