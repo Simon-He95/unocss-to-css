@@ -34,6 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
   setTimeout(() => {
     vscode.languages.registerHoverProvider(LANS, {
       provideHover(document, position) {
+        if (!document)
+          return
         const offset = document.offsetAt(position)
         // 如果不在template 中或style中直接return
         const alltext = document.getText()
@@ -134,20 +136,21 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
-  const languageId = document.languageId
-  if (languageId === 'vue')
-    addCacheVue(document.getText() as string)
-  else if (languageId === 'typescriptreact')
-    addCacheReact(document!.getText() as string)
-
-  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((event) => {
-    if (!event.contentChanges.length)
-      return
+  if (document) {
+    const languageId = document.languageId
     if (languageId === 'vue')
-      return addCacheVue(document!.getText() as string)
-    if (languageId === 'typescriptreact')
-      return addCacheReact(document!.getText() as string)
-  }))
+      addCacheVue(document.getText() as string)
+    else if (languageId === 'typescriptreact')
+      addCacheReact(document!.getText() as string)
+    context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((event) => {
+      if (!event.contentChanges.length)
+        return
+      if (languageId === 'vue')
+        return addCacheVue(document.getText() as string)
+      if (languageId === 'typescriptreact')
+        return addCacheReact(document.getText() as string)
+    }))
+  }
 
   function setStyle(editor: vscode.TextEditor, realRangeMap: any[], css: string) {
     // 增加decorationType样式
