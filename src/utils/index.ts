@@ -1,14 +1,27 @@
 import { createGenerator } from '@unocss/core'
 import presetUno from '@unocss/preset-uno'
+import * as vscode from 'vscode'
 
 export type CssType = 'less' | 'scss' | 'css' | 'stylus'
+
+const style = {
+  dark: Object.assign({
+    textDecoration: 'underline dashed #fff',
+  }),
+  light: Object.assign({
+    textDecoration: 'underline dashed #eee',
+  }),
+}
+export const decorationType = vscode.window.createTextEditorDecorationType(style)
 
 export function transformUnocssBack(code: string): Promise<string> {
   return new Promise((resolve) => {
     createGenerator(
       {},
       {
-        presets: [presetUno()],
+        presets: [
+          presetUno(),
+        ],
       },
     )
       .generate(code || '')
@@ -61,30 +74,102 @@ export class LRUCache {
   }
 }
 
-export const cacheMap = new LRUCache(500)
+export const cacheMap = new LRUCache(5000)
 
-export function addCacheVue(content: string) {
+export async function addCacheVue(content: string) {
   const match = content.match(/[\n\s]<template[^>]*>(.*)<\/template>/s)
   if (!match)
     return
   const template = match[1]
+  const { line } = getPosition(content, match.index!)!
+  const realRangeMap = []
   for (const match of template.matchAll(/<[^\s]+\s([^>\/]+)[\/>]/g)) {
     if (!match)
       continue
     // 只考虑单独的属性
-    const attributes = match[1].replace(/[\w\-@:]+="[^"]+"/g, '').trim().replace(/\s+/g, ' ')
+    let attributeStr = match[1].trim().replace(/\s+/g, ' ').replace(/\s(['"])/g, '$1').replace(/="\s/g, '="')
+    // class
+    let _attrs: any[] = []
+    const { line: outLine } = getPosition(template, match.index!)!
+    const offset = match[0].indexOf(match[1]) + match.index! - 1
+    attributeStr = attributeStr.replace(/class="([^"]*)"/, (_, attr, i) => {
+      let pos = i + 6
+      _attrs.push(...attr.split(' ').map((content: string, index: number) => {
+        // pos+=character
+        if (index !== 0)
+          pos += 1
+        return {
+          content,
+          position: [
+            {
+              start: offset + pos,
+              end: pos + content.length + offset,
+              line: line + outLine,
+            },
+          ],
+        }
+      }))
+      return ''
+    })
 
-    if (!attributes)
-      continue
-      // 过滤缓存已有的属性
-    const attrs = attributes.split(' ').filter(attr =>
-      !cacheMap.has(attr),
-    )
-    attrs.forEach(attr =>
-      transformUnocssBack(attr).then(r =>
-        r && cacheMap.set(attr, r),
-      ),
-    )
+    attributeStr = attributeStr.replace(/(\w+)="([^"]*)"/g, (_, name, values, i) => {
+      if (name === 'style')
+        return '_'.repeat(_.length)
+      let pos = i + name.length + 2
+      _attrs.push(...values.split(' ').map((v: string, index: any) => {
+        if (index !== 0)
+          pos += 1
+        return {
+          content: `${name}-${v}`,
+          position: i === 0
+            ? [
+                {
+                  start: offset + i,
+                  end: offset + i + name.length,
+                  line: line + outLine,
+                },
+                {
+                  start: offset + pos,
+                  end: offset + pos + v.length,
+                  line: line + outLine,
+                },
+              ]
+            : [],
+        }
+      }))
+      return '_'.repeat(_.length)
+    })
+
+    attributeStr.split(' ').forEach(async (attr) => {
+      if (/_+/.test(attr) || !/\w+/.test(attr) || /(\w+)="([^"]*)/.test(attr))
+        return
+      const start = attributeStr.indexOf(attr)
+      _attrs.push({
+        content: attr,
+        position: [
+          {
+            start: offset + start,
+            end: offset + start + attr.length,
+            line: line + outLine,
+          },
+        ],
+      })
+    })
+    _attrs = _attrs.filter(attr => !cacheMap.has(attr.content))
+    for (const item of _attrs) {
+      const { content, position } = item
+      transformUnocssBack(content).then((transferredCss) => {
+        if (transferredCss) {
+          cacheMap.set(content, transferredCss)
+          realRangeMap.push(...position)
+        }
+      })
+    }
+
+    // todo: 修复初始化的高亮坐标
+    // highlight(realRangeMap.map(({ start, end, line }) =>
+    //   new vscode.Range(new vscode.Position(line, start), new vscode.Position(line, end))
+    // ))
   }
 }
 
@@ -104,5 +189,27 @@ export function addCacheReact(content: string) {
         r && cacheMap.set(attr, r),
       ),
     )
+  }
+}
+
+export function highlight(realRangeMap: vscode.Range[]) {
+  const editor = vscode.window.activeTextEditor
+  if (!editor)
+    return
+  editor.edit(() => editor.setDecorations(decorationType, realRangeMap))
+}
+
+export function getPosition(content: string, pos: number) {
+  const contents = content.split('\n')
+  let num = 0
+  for (let i = 0; i < contents.length; i++) {
+    const len = contents[i].length
+    if ((num <= pos) && (pos <= (num + len))) {
+      return {
+        line: i,
+        character: pos - num,
+      }
+    }
+    num += contents[i].length + (i === 0 ? 0 : 1)
   }
 }

@@ -40,6 +40,11 @@
     "publish": "vsce publish --no-dependencies",
     "release": "bumpp && pnpm run publish"
   },
+  "dependencies": {
+    "@unocss/preset-attributify": "^0.53.4",
+    "@unocss/transformer-directives": "^0.53.4",
+    "@vscode-use/utils": "^0.0.25"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^0.38.4",
     "@types/node": "^18.15.11",
