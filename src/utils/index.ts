@@ -83,13 +83,13 @@ export async function addCacheVue(content: string) {
   const template = match[1]
   const { line } = getPosition(content, match.index!)!
   const realRangeMap = []
+  let _attrs: any[] = []
   for (const match of template.matchAll(/<[^\s]+\s([^>\/]+)[\/>]/g)) {
     if (!match)
       continue
     // 只考虑单独的属性
     let attributeStr = match[1].trim().replace(/\s+/g, ' ').replace(/\s(['"])/g, '$1').replace(/="\s/g, '="')
     // class
-    let _attrs: any[] = []
     const { line: outLine } = getPosition(template, match.index!)!
     const offset = match[0].indexOf(match[1]) + match.index! - 1
     attributeStr = attributeStr.replace(/class="([^"]*)"/, (_, attr, i) => {
@@ -155,21 +155,21 @@ export async function addCacheVue(content: string) {
         ],
       })
     })
-    _attrs = _attrs.filter(attr => !cacheMap.has(attr.content))
-    for (const item of _attrs) {
-      const { content, position } = item
-      transformUnocssBack(content).then((transferredCss) => {
-        if (transferredCss) {
-          cacheMap.set(content, transferredCss)
-          realRangeMap.push(...position)
-        }
-      })
-    }
 
     // todo: 修复初始化的高亮坐标
     // highlight(realRangeMap.map(({ start, end, line }) =>
     //   new vscode.Range(new vscode.Position(line, start), new vscode.Position(line, end))
     // ))
+  }
+  _attrs = _attrs.filter(attr => !cacheMap.has(attr.content))
+  for (const item of _attrs) {
+    const { content, position } = item
+    transformUnocssBack(content).then((transferredCss) => {
+      if (transferredCss) {
+        cacheMap.set(content, transferredCss)
+        realRangeMap.push(...position)
+      }
+    })
   }
 }
 

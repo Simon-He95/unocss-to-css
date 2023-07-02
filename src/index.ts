@@ -28,20 +28,27 @@ export function activate(context: vscode.ExtensionContext) {
       const wordRange = new vscode.Range(selection.start, selection.end)
       let selectedText = editor.document.getText(wordRange)
       const realRangeMap: any = []
-
+      const { line, character } = position
+      const allText = document.getText()
+      const lineText = allText.split('\n')[line]
       if (!selectedText) {
-        const allText = document.getText()
-        const { line, character } = position
-        const lineText = allText.split('\n')[line]
         let _text = lineText[character]
+        if (!_text || /[><\s\/]/.test(_text))
+          return
         let i = character
         let c
-        while ((c = lineText[--i]) !== ' ')
+        while ((c = lineText[--i]) !== ' ' && c) {
+          if (/[><\/]/.test(c))
+            return
           _text = `${c}${_text}`
+        }
 
         let j = character
-        while (!/[\s\/"]/.test((c = lineText[++j])))
+        while (!/[\s\/"]/.test((c = lineText[++j])) && c) {
+          if (/[><\/]/.test(c))
+            return
           _text = `${_text}${c}`
+        }
 
         if (_text.includes('="')) {
           const texts = _text.split('="')
@@ -68,6 +75,22 @@ export function activate(context: vscode.ExtensionContext) {
             realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, j)))
         }
         selectedText = _text
+      }
+      else {
+        if (selectedText.trim() === '')
+          return
+
+        const pos = lineText.indexOf(selectedText)
+        let offsetLeft = 0
+
+        while (selectedText[offsetLeft] === ' ')
+          offsetLeft++
+        let offsetRight = -1
+        while (selectedText.slice(offsetRight)[0] === ' ')
+          offsetRight--
+        offsetRight++
+        realRangeMap.push(new vscode.Range(new vscode.Position(line, pos + offsetLeft), new vscode.Position(line, pos + selectedText.length + offsetRight)))
+        selectedText = selectedText.trim()
       }
 
       if (cacheMap.has(selectedText)) {
