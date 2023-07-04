@@ -1,6 +1,9 @@
+import fsp from 'node:fs/promises'
 import { createGenerator } from '@unocss/core'
 import presetUno from '@unocss/preset-uno'
+import presetAttributify from '@unocss/preset-attributify'
 import * as vscode from 'vscode'
+import { findUp } from 'find-up'
 
 export type CssType = 'less' | 'scss' | 'css' | 'stylus'
 
@@ -14,14 +17,21 @@ const style = {
 }
 export const decorationType = vscode.window.createTextEditorDecorationType(style)
 
-export function transformUnocssBack(code: string): Promise<string> {
+export const disposes: any = []
+
+export async function transformUnocssBack(code: string): Promise<string> {
+  // 加载shortcuts
+  const shortcuts = await getShortcuts()
+
   return new Promise((resolve) => {
     createGenerator(
       {},
       {
         presets: [
           presetUno(),
+          presetAttributify() as any,
         ],
+        shortcuts,
       },
     )
       .generate(code || '')
@@ -35,6 +45,32 @@ export function transformUnocssBack(code: string): Promise<string> {
         resolve(result)
       })
   })
+}
+
+let configCacheMap: any = null
+const SHORTCUTS_REG = /shortcuts:\s*(\[([\n\s]*[{[][^\}]*[\n\s]*[}\]],?)*[\n\s]*\])/
+
+export async function getShortcuts() {
+  if (configCacheMap)
+    return configCacheMap
+  const cwd = vscode.window.activeTextEditor?.document.uri.fsPath
+  return findUp(['uno.config.js', 'uno.config.ts', 'unocss.config.js', 'unocss.config.ts'], { cwd }).then(async (filepath) => {
+    if (!filepath)
+      return []
+
+    configCacheMap = await findShortcuts(filepath)
+    return configCacheMap
+  })
+}
+
+// 监听unoConfig变化
+
+async function findShortcuts(unoUri: string) {
+  const content = await fsp.readFile(unoUri, 'utf-8')
+  const matcher = content.match(SHORTCUTS_REG)
+  if (!matcher)
+    return []
+  return eval(matcher[1])
 }
 
 function escapeRegExp(str: string) {
@@ -71,6 +107,10 @@ export class LRUCache {
 
   has(key: any) {
     return this.cache.has(key)
+  }
+
+  clear() {
+    this.cache.clear()
   }
 }
 

@@ -53,6 +53,7 @@
     "@unocss/preset-uno": "^0.51.4",
     "bumpp": "^9.1.0",
     "eslint": "^8.37.0",
+    "find-up": "^6.3.0",
     "magic-string": "^0.30.0",
     "pnpm": "^8.1.1",
     "tsup": "^6.7.0",
