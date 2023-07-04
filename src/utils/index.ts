@@ -161,9 +161,21 @@ export async function addCacheVue(content: string) {
     //   new vscode.Range(new vscode.Position(line, start), new vscode.Position(line, end))
     // ))
   }
-  _attrs = _attrs.filter(attr => !cacheMap.has(attr.content))
+  const _map = new Set()
+  // 过滤重复的attr
+  _attrs = _attrs.filter(attr => !cacheMap.has(attr.content)).map((attr) => {
+    if (_map.has(attr.content))
+      return undefined
+    _map.add(attr.content)
+    return attr
+  }).filter(Boolean)
+
   for (const item of _attrs) {
     const { content, position } = item
+    if (cacheMap.has(content)) {
+      realRangeMap.push(...position)
+      continue
+    }
     transformUnocssBack(content).then((transferredCss) => {
       if (transferredCss) {
         cacheMap.set(content, transferredCss)
@@ -184,11 +196,14 @@ export function addCacheReact(content: string) {
     const attrs = attributes.split(' ').filter(attr =>
       !cacheMap.has(attr),
     )
-    attrs.forEach(attr =>
+
+    for (const attr of attrs) {
+      if (cacheMap.has(attr))
+        continue
       transformUnocssBack(attr).then(r =>
         r && cacheMap.set(attr, r),
-      ),
-    )
+      )
+    }
   }
 }
 

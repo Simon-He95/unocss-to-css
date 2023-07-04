@@ -110,7 +110,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 监听编辑器选择内容变化的事件
   vscode.window.onDidChangeTextEditorSelection(() => vscode.window.activeTextEditor?.setDecorations(decorationType, []))
-  
+
   if (document) {
     const languageId = document.languageId
     if (languageId === 'vue')
