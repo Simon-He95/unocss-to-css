@@ -76,7 +76,11 @@ export function activate(context: vscode.ExtensionContext) {
             if (index <= character && character <= index + match[0].length) {
               isFind = true
               if (!/class(Name)?/.test(match[1])) {
-                _text = `${match[1]}-${_text}`
+                if (_text.includes(':')) {
+                  const temp = _text.split(':')
+                  _text = `${temp.slice(0, -1).join('-')}-${match[1]}-${temp.slice(-1)[0]}`
+                }
+                else { _text = `${match[1]}-${_text}` }
                 realRangeMap.push(new vscode.Range(new vscode.Position(line, index), new vscode.Position(line, index + match[1].length)))
               }
               realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, j)))
@@ -86,11 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (!isFind)
             realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, j)))
         }
-        for (const prefixMatch of _text.matchAll(/(\w+):/g)) {
-          if (!prefixMatch)
-            continue
-          _text = `${prefixMatch[1]}-${_text.replace(prefixMatch[0], '')}`
-        }
+
         selectedText = _text
       }
       else {

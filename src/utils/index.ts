@@ -119,8 +119,20 @@ export async function addCacheVue(content: string) {
       _attrs.push(...values.split(' ').map((v: string, index: any) => {
         if (index !== 0)
           pos += 1
+        let content = ''
+        if (v === '~') {
+          content = name
+        }
+        else if (v.includes(':')) {
+          const temp = v.split(':')
+          content = `${temp.slice(0, -1).join('-')}-${name}-${temp.slice(-1)[0]}`
+        }
+        else {
+          content = `${name}-${v}`
+        }
+
         return {
-          content: `${name}-${v}`,
+          content,
           position: i === 0
             ? [
                 {
