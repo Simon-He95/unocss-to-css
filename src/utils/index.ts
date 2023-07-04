@@ -9,7 +9,7 @@ const style = {
     textDecoration: 'underline dashed #fff',
   }),
   light: Object.assign({
-    textDecoration: 'underline dashed #eee',
+    textDecoration: 'underline dashed #333',
   }),
 }
 export const decorationType = vscode.window.createTextEditorDecorationType(style)

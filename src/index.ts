@@ -52,9 +52,19 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (_text.includes('="')) {
           const texts = _text.split('="')
-          _text = texts.join('-')
-          realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, i + 1 + texts[0].length)))
-          realRangeMap.push(new vscode.Range(new vscode.Position(line, j - texts[1].length), new vscode.Position(line, j)))
+          if (/class(Name)?/.test(texts[0])) {
+            _text = texts[1]
+            realRangeMap.push(new vscode.Range(new vscode.Position(line, j - texts[1].length), new vscode.Position(line, j)))
+          }
+          else if (texts[1] === '~') {
+            _text = texts[0]
+            realRangeMap.push(new vscode.Range(new vscode.Position(line, j - texts[1].length), new vscode.Position(line, j)))
+            realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, i + 1 + texts[0].length)))
+          }
+          else {
+            _text = texts.join('-')
+            realRangeMap.push(new vscode.Range(new vscode.Position(line, j - texts[1].length), new vscode.Position(line, j)))
+          }
         }
         else {
           const newReg = new RegExp(`(\\w+)="[^"]*${_text}[^"]*"`, 'g')
@@ -65,14 +75,21 @@ export function activate(context: vscode.ExtensionContext) {
             const index = match.index!
             if (index <= character && character <= index + match[0].length) {
               isFind = true
-              _text = `${match[1]}-${_text}`
+              if (!/class(Name)?/.test(match[1])) {
+                _text = `${match[1]}-${_text}`
+                realRangeMap.push(new vscode.Range(new vscode.Position(line, index), new vscode.Position(line, index + match[1].length)))
+              }
               realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, j)))
-              realRangeMap.push(new vscode.Range(new vscode.Position(line, index), new vscode.Position(line, index + match[1].length)))
               break
             }
           }
           if (!isFind)
             realRangeMap.push(new vscode.Range(new vscode.Position(line, i + 1), new vscode.Position(line, j)))
+        }
+        for (const prefixMatch of _text.matchAll(/(\w+):/g)) {
+          if (!prefixMatch)
+            continue
+          _text = `${prefixMatch[1]}-${_text.replace(prefixMatch[0], '')}`
         }
         selectedText = _text
       }
@@ -81,6 +98,8 @@ export function activate(context: vscode.ExtensionContext) {
           return
 
         const pos = lineText.indexOf(selectedText)
+        if (pos < 0)
+          return
         let offsetLeft = 0
 
         while (selectedText[offsetLeft] === ' ')
